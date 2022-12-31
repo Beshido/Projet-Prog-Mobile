@@ -20,14 +20,14 @@
                 android:value="" />
         </activity>
         <activity
-            android:name=".MainMenu"
+            android:name=".MainActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".MainMenu"
             android:exported="true"
             android:label="LearnWot">
             <intent-filter>
