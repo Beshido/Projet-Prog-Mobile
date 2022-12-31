@@ -20,7 +20,7 @@
             android:id="@+id/logo_image_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/Logo"
+            android:src="@drawable/logo"
             android:layout_gravity="center_horizontal"/>
 
     </LinearLayout>
@@ -67,10 +67,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:padding="12dp"
-            android:background=""
             android:textColor="@color/white"
             android:text="@string/motATraduire"
-            android:textSize="18dp" />
+            android:textSize="18dp"/>
 
         <EditText
             android:id="@+id/nombre_decimal"
