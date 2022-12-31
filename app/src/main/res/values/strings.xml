@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">Projet Traduction</string>
+    <string name="game">Jeu de Mémorisation</string>
+    <string name="translation">Traduction</string>
+    <string name="options">Options</string>
+    <string name="logo">Logo</string>
+    <string name="motTraduit">Mot Traduit :</string>
+    <string name="motATraduire">Mot à Traduire :</string>
+    <string name="translate">Traduire</string>
+    <string name="addBdd">Ajouter à la base de donnée</string>
+    <string name="suppBdd">Supprimer de la base de donnée</string>
+    <string name="french">Français</string>
+    <string name="english">Anglais</string>
+    <string name="spanish">Espagnol</string>
+    <string name="german">Allemand</string>
 </resources>
