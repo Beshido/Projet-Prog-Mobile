@@ -19,4 +19,10 @@ interface TraductionDao {
 
     @Query("SELECT * FROM TraductionTable WHERE id = :id")
     fun findById(id: Int): Traduction
+
+    @Query("Select * FROM TraductionTable WHERE base_language or target_language = :word")
+    fun findTraduction(word: String): Traduction
+
+    @Query("Select * FROM TraductionTable WHERE base_language = :language AND target_language = :word")
+    fun findSpecificTraduction(word: String, language: String): Traduction
 }

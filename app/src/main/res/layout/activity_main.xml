@@ -31,11 +31,20 @@
         android:padding="75dp">
 
         <Spinner
-            android:id="@+id/spinner_languages"
+            android:id="@+id/spinner_languages1"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="left" />
 
-</LinearLayout>
+        <Spinner
+            android:id="@+id/spinner_languages2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="right" />
+
+    </LinearLayout>
 
 
 
@@ -52,6 +61,14 @@
             android:padding="12dp"
             android:text="@string/motTraduit"
             android:textSize="18dp" />
+
+        <EditText
+            android:id="@+id/editTextTextPersonName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="text"/>
 
     </LinearLayout>
 
@@ -76,7 +93,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:inputType="numberDecimal"
+            android:inputType="text"
             android:padding="12dp"
             android:textSize="24dp" />
     </LinearLayout>
