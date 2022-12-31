@@ -1,11 +1,16 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
 
 android {
     namespace 'fr.lejeune.banane.projettraduction'
     compileSdk 32
+
+    buildFeatures{
+        viewBinding true
+    }
 
     defaultConfig {
         applicationId "fr.lejeune.banane.projettraduction"
@@ -33,6 +38,10 @@ android {
 }
 
 dependencies {
+    def room_version = "2.3.0"
+
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
