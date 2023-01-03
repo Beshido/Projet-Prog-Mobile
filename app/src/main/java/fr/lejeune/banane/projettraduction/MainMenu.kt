@@ -26,6 +26,8 @@ class MainMenu : AppCompatActivity(){
 
     binding.buttonOptions.setOnClickListener {
         // start the options activity
+        //val intent = Intent( this,OptionActivity::class.java)
+        //startActivity(Intent)
     }
     }
 }

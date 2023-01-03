@@ -6,7 +6,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import translateApi
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -63,13 +62,12 @@ class MainActivity : AppCompatActivity() {
 
         binding.boutonTraduire.setOnClickListener(){
             fun checkWordInDAO(word: String, textView: TextView) {
-                val word = binding.
                 val language = binding.spinnerLanguages2.onItemSelectedListener.toString()
                 // Check if the word has an equivalent in the selected language in the DAO
                 val translation = database.traductionDao().findSpecificTraduction(word, language)
                 if (translation != null) {
                     // If the word has an equivalent, set the translation in the TextView
-                    textView.text = translation
+                    textView.text = translation.toString()
                 } else {
                     // If the word does not have an equivalent, display a notification
                     val notificationIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.wordreference.com/"))
