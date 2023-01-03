@@ -1,37 +1,47 @@
 package fr.lejeune.banane.projettraduction
 
 import android.R
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
-import translateApi
+import android.os.Build
+/*import translateApi*/
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.*
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.ViewModelProvider
+import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Room
 import fr.lejeune.banane.projettraduction.databinding.ActivityMainBinding
 
+private lateinit var dao: Dao
+
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding // view binding object
+    val CHANNEL_ID = "message urgent"
+    val notificationManager by lazy { getSystemService(NOTIFICATION_SERVICE) as NotificationManager }
+    val pendingFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
+
+    val model by lazy { ViewModelProvider(this).get(AppDatabaseViewModel::class.java) }
+
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        createNotificationChannel()
 
         val database = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
             "app_database"
-
-
-
-
         ).build()
         val userDao = database.traductionDao()
         val languageOptions = arrayOf("Français", "Anglais", "Espagnol", "Allemand")
@@ -45,7 +55,6 @@ class MainActivity : AppCompatActivity() {
                 // do something when an item is selected
             }
 
-
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 // do something when nothing is selected
             }
@@ -55,40 +64,40 @@ class MainActivity : AppCompatActivity() {
                 // do something when an item is selected
             }
 
-
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 // do something when nothing is selected
             }
         }
 
-        binding.boutonTraduire.setOnClickListener(){
-            fun checkWordInDAO(word: String, textView: TextView) {
-                val word = binding.
-                val language = binding.spinnerLanguages2.onItemSelectedListener.toString()
-                // Check if the word has an equivalent in the selected language in the DAO
-                val translation = database.traductionDao().findSpecificTraduction(word, language)
-                if (translation != null) {
-                    // If the word has an equivalent, set the translation in the TextView
-                    textView.text = translation
-                } else {
-                    // If the word does not have an equivalent, display a notification
-                    val notificationIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.wordreference.com/"))
-                    val pendingIntent = PendingIntenCompat.Builder(this, CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_notification)
-                        .setContentTitle("Word not found")
-                        .setContentText("Search for the translation on WordReference")
-                        .setContentIntent(pendingIntent)
-                        .setAutoCancel(true)
-                        .build()
-                    val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-                    notificationManager.notify(NOTIFICATION_ID, notification)
-                }
-            }
+        binding.boutonTraduire.setOnClickListener {
+            val word = binding.motAtraduireEditText.toString()
+            val language = binding.spinnerLanguages2.onItemSelectedListener.toString()
+            // Check if the word has an equivalent in the selected language in the DAO
+            Thread {
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.setData( Uri.parse( "https://www.wordreference.com/fren/manger" ) )
+                startActivity( intent )
+            }.start()
+
         }
 
-
+        binding.boutonAjoutBDD.setOnClickListener {
         }
     }
 
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "private channel",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply { description = "private channel" }
 
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
 }

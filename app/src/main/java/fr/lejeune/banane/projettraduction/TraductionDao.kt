@@ -1,5 +1,6 @@
 package fr.lejeune.banane.projettraduction
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.*
 
@@ -24,5 +25,5 @@ interface TraductionDao {
     fun findTraduction(word: String): Traduction
 
     @Query("Select * FROM TraductionTable WHERE base_language = :language AND target_language = :word")
-    fun findSpecificTraduction(word: String, language: String): Traduction
+    fun findSpecificTraduction(word: String, language: String): LiveData<Traduction>
 }

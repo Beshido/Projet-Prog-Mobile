@@ -8,7 +8,5 @@ data class Traduction(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val base_language: String,
     val target_language: String,
-
+    val translation_page: String,
 )
-
-
