@@ -2,19 +2,24 @@ package fr.lejeune.banane.projettraduction
 
 import android.app.*
 import android.content.Intent
-import android.media.AudioAttributes
-import android.media.MediaPlayer
+import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Build
 import android.os.IBinder
+import android.preference.PreferenceManager
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.MutableLiveData
 
 
-@RequiresApi(Build.VERSION_CODES.M)
 class MyService : Service() {
-    private val CHANNEL_ID = "channel"
-    val notificationManager by lazy { getSystemService(NotificationManager::class.java) }
+    private val channelId = "message urgent"
+    private val notificationManager by lazy { getSystemService(NOTIFICATION_SERVICE) as NotificationManager }
+    private val dao by lazy { AppDatabase.getDatabase(this).traductionDao() }
+    private var values = MutableLiveData<List<Traduction>>()
+    private val pendingFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
+    private val preferences by lazy { getSharedPreferences("Options", MODE_PRIVATE) }
 
     override fun onBind(intent: Intent): IBinder? {
         TODO()
@@ -25,53 +30,61 @@ class MyService : Service() {
         createNotificationChannel()
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(CHANNEL_ID, "channel_name", importance)
-            channel.description = "channel_description"
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
-
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        if( intent.action == "stop" ){
-            stopSelf() // arrêter le service lui-même
+        if(intent.action == "stop"){
+            stopSelf()
             return START_NOT_STICKY
         }
 
-        if( !intent.action.equals("start") ){
-            Log.d("MyService", "l'action inconnue")
+        if(!intent.action.equals("start")){
+            Log.d("MyService", "action inconnue")
             return START_NOT_STICKY
         }
-        Log.d("MyService", "GO GO GO")
 
-        /* quand l'utilisateur clique sur le bouton de l'alarme le intent suivant sera envoyé vers le service */
-        val serviceIntent = Intent(this, MyService::class.java).apply{
-            action="stop"
+        Thread {
+            values.postValue(dao.getRandomTraductions(preferences.getInt("motsParJour", 10)))
+        }.start()
+
+        values.observeForever {
+            for (i in it.indices) {
+                var isNotificationExists = false
+                for (j in notificationManager.activeNotifications.indices) {
+                    if (notificationManager.activeNotifications[i].id == it[i].id) {
+                        isNotificationExists = true
+                    }
+                }
+                if (isNotificationExists) {
+                    continue
+                }
+
+                val intentAction = Intent(Intent.ACTION_VIEW)
+                intentAction.data = Uri.parse(it[i].dict)
+
+                fun getPendingEvent(): PendingIntent {
+                    val pendingIntent = PendingIntent.getActivity(this, i, intentAction, pendingFlag)
+                    it[i].score -= 2
+                    Thread {
+                        dao.update(it[i])
+                    }.start()
+                    return pendingIntent
+                }
+
+                val notification = NotificationCompat.Builder(this, channelId)
+                    .setContentTitle(it[i].word)
+                    .setContentText(it[i].base_language + " -> " + it[i].target_language)
+                    .setSmallIcon(R.drawable.logo_petit)
+                    .addAction(R.drawable.logo_petit, "Voir la traduction", getPendingEvent())
+                    .build()
+
+                it[i].score += 1
+                Thread {
+                    dao.update(it[i])
+                }.start()
+
+                notificationManager.notify(it[i].id, notification)
+            }
         }
-        val servicePendingIntent = PendingIntent.getService(this, 1, serviceIntent, PendingIntent.FLAG_IMMUTABLE)
-
-        /* intent envoyé quand l'utilisateur touche sur la notification */
-        val activityPendingIntent = PendingIntent.getActivity(this, 1,
-            Intent(this,
-                MainActivity::class.java),
-            PendingIntent.FLAG_IMMUTABLE)
-
-        val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("musique")
-            .setContentText("jouer la musique")
-            .setSmallIcon(R.drawable.logo)
-            .setContentIntent( activityPendingIntent ) /* activer une activité */
-            .addAction(R.drawable.logo, "arrêter la musique", servicePendingIntent)
-            .setAutoCancel(true)
-            .build()
-
-        Log.d("MyService", "passer en mode foreground")
-        startForeground(1, notification)
-
-        if( intent.data == null )
-            return START_NOT_STICKY
 
         return START_NOT_STICKY
     }
@@ -79,6 +92,14 @@ class MyService : Service() {
     override fun onDestroy() {
         Log.d("MyService", "OnDestroy")
         super.onDestroy()
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, "private channel", NotificationManager.IMPORTANCE_DEFAULT)
+                .apply { description = "private channel" }
+            notificationManager.createNotificationChannel(channel)
+        }
     }
 }
 

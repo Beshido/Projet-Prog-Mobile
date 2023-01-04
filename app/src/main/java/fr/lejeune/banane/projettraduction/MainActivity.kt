@@ -1,47 +1,32 @@
 package fr.lejeune.banane.projettraduction
 
-import android.R
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.*
-import androidx.room.Dao
-import androidx.core.app.NotificationCompat
-import androidx.core.view.get
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.room.Insert
-import androidx.room.Room
 import fr.lejeune.banane.projettraduction.databinding.ActivityMainBinding
-import java.net.URI
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityMainBinding // view binding object
-    val notificationManager by lazy { getSystemService(NOTIFICATION_SERVICE) as NotificationManager }
-
     val model by lazy { ViewModelProvider(this).get(AppDatabaseViewModel::class.java) }
-
-    private lateinit var adapter: MyRecycleAdapter
+    private lateinit var adapter: MyRecycleAdapterDict
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        // createNotificationChannel()
 
         if (savedInstanceState == null)
             model.getSpecificDicts(model.languageOptions[0], model.languageOptions[1])
 
 
-        adapter = MyRecycleAdapter(emptyList<Dict>().toMutableList())
+        adapter = MyRecycleAdapterDict(emptyList<Dict>().toMutableList())
         binding.dictSpinner.layoutManager = LinearLayoutManager(this)
         binding.dictSpinner.adapter = adapter
         model.resultatSelect?.observe(this) {
@@ -49,7 +34,7 @@ class MainActivity : AppCompatActivity() {
             adapter.notifyDataSetChanged()
         }
 
-        val adapterLangues = ArrayAdapter(this, R.layout.simple_spinner_item, model.languageOptions)
+        val adapterLangues = ArrayAdapter(this, android.R.layout.simple_spinner_item, model.languageOptions)
         adapterLangues.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerLanguages1.adapter = adapterLangues
         binding.spinnerLanguages2.adapter = adapterLangues
@@ -87,28 +72,31 @@ class MainActivity : AppCompatActivity() {
             val url = dict + word
 
             // Check if the word has an equivalent in the selected language in the DAO
-            Thread {
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.setData(Uri.parse(url))
-                startActivity(intent)
-            }.start()
+            if (word.isNotBlank()) {
+                Thread {
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.data = Uri.parse(url)
+                    startActivity(intent)
+                }.start()
+            }
+
 
         }
 
         binding.boutonAjoutBDD.setOnClickListener {
             val word = binding.motAtraduireEditText.text.toString()
-            val language_source = model.languageOptions.get(model.l1)
-            val language_dest = model.languageOptions.get(model.l2)
+            val languageSource = model.languageOptions.get(model.l1)
+            val languageDest = model.languageOptions.get(model.l2)
             val dict = model.url
 
-            if (word.isNullOrEmpty() || model.l1 == model.l2 || model.url.isNullOrEmpty()) {
+            if (word.isEmpty() || model.l1 == model.l2 || model.url.isNullOrEmpty()) {
                 Toast.makeText(this, "Erreur...", Toast.LENGTH_SHORT).show()
             }
             else {
                 Toast.makeText(this, "Ajout du mot $word à la base de donnée...", Toast.LENGTH_SHORT).show()
                 Thread {
-                    model.addTraduction(TraductionItem(word, language_source, language_dest, dict!!))
-                    model.addDict(DictItem(dict, language_source, language_dest))
+                    model.addTraduction(TraductionItem(word, languageSource, languageDest, dict!!))
+                    model.addDict(DictItem(dict, languageSource, languageDest))
                 }.start()
             }
 
@@ -117,7 +105,6 @@ class MainActivity : AppCompatActivity() {
 
         if(intent.action.equals("android.intent.action.SEND")) {
             intent.getStringExtra("android.intent.extra.TEXT").let {
-                println(it)
                 if (it != null) {
                     val lastSlashIndex = it.lastIndexOf("/")
 
@@ -129,27 +116,15 @@ class MainActivity : AppCompatActivity() {
                         indexEnd = lastSlashIndex
                     }
 
-                    model.url = it.substring(0, indexBegin)
+                    model.url = it
+                    model.base_url = it.substring(0, indexBegin)
                     val word = it.substring(indexBegin, indexEnd)
-
                     binding.motAtraduireEditText.setText(word)
 
                     println(model.url)
                     println(word)
                 }
             }
-        }
-    }
-
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "CHANNEL_ID",
-                "private channel",
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply { description = "private channel" }
-
-            notificationManager.createNotificationChannel(channel)
         }
     }
 }

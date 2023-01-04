@@ -2,14 +2,12 @@ package fr.lejeune.banane.projettraduction
 
 import android.graphics.Color
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import fr.lejeune.banane.projettraduction.databinding.DictLayoutBinding
 
-class MyRecycleAdapter(val liste: MutableList<Dict>) : RecyclerView.Adapter<MyRecycleAdapter.ViewHolder>() {
+class MyRecycleAdapterDict(val liste: MutableList<Dict>) : RecyclerView.Adapter<MyRecycleAdapterDict.ViewHolder>() {
 
     var selectedItem: Dict? = null
     var selectedView: CardView? = null
@@ -20,10 +18,16 @@ class MyRecycleAdapter(val liste: MutableList<Dict>) : RecyclerView.Adapter<MyRe
         viewHolder.binding.nomDict.setOnClickListener {
             selectedView?.setBackgroundColor(0)
 
-            selectedItem = viewHolder.dict
-            selectedView = viewHolder.binding.cardView
+            if (selectedItem != viewHolder.dict) {
+                selectedItem = viewHolder.dict
+                selectedView = viewHolder.binding.cardView
 
-            selectedView!!.setBackgroundColor(Color.parseColor("#FFAEC9"))
+                selectedView!!.setBackgroundColor(Color.parseColor("#FFAEC9"))
+            }
+            else {
+                selectedItem = null
+                selectedView = null
+            }
         }
         return viewHolder
     }
@@ -31,7 +35,6 @@ class MyRecycleAdapter(val liste: MutableList<Dict>) : RecyclerView.Adapter<MyRe
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.dict = liste[position]
         holder.binding.nomDict.text = holder.dict.url
-
     }
 
     override fun getItemCount(): Int = liste.size

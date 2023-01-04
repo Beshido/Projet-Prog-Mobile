@@ -9,7 +9,8 @@ class TraductionItem(
     val word: String,
     val base_language: String,
     val target_language: String,
-    val dict: String
+    val dict: String,
+    val score:Int = 0,
 )
 
 class DictItem(
@@ -18,12 +19,11 @@ class DictItem(
     val language_dest: String
 )
 
-@Database(entities = [Traduction::class, Dict::class], version = 17)
+@Database(entities = [Traduction::class, Dict::class], version = 18)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun traductionDao(): TraductionDao
-    abstract fun dictDao(): DictDao
+    abstract fun dictionnaireDao(): DictDao
 
-    //create function getDatabase
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null

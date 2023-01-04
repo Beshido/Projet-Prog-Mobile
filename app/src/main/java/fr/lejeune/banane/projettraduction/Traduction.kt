@@ -9,7 +9,8 @@ data class Traduction(
     val word: String,
     val base_language: String,
     val target_language: String,
-    val dict: String
+    val dict: String,
+    var score: Int,
 )
 
 

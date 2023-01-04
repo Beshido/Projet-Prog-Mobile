@@ -9,7 +9,7 @@ interface TraductionDao {
     fun insert(traduction: TraductionItem)
 
     @Update
-    fun update(traduction: Traduction)
+    fun update(traduction: Traduction): Int
 
     @Delete
     fun delete(traduction: Traduction)
@@ -20,9 +20,12 @@ interface TraductionDao {
     @Query("SELECT * FROM TraductionTable WHERE id = :id")
     fun findById(id: Int): Traduction
 
-    @Query("Select * FROM TraductionTable WHERE base_language or target_language = :word")
+    @Query("SELECT * FROM TraductionTable WHERE base_language or target_language = :word")
     fun findTraduction(word: String): Traduction
 
-    @Query("Select * FROM TraductionTable WHERE base_language = :language AND target_language = :word")
+    @Query("SELECT * FROM TraductionTable WHERE base_language = :language AND target_language = :word")
     fun findSpecificTraduction(word: String, language: String): Traduction
+
+    @Query ("SELECT * FROM TraductionTable WHERE score <= 3 ORDER BY RANDOM() LIMIT :n")
+    fun getRandomTraductions(n: Int): List<Traduction>
 }
