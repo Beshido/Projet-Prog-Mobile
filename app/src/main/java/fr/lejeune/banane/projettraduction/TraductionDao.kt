@@ -5,8 +5,8 @@ import androidx.room.*
 
 @Dao
 interface TraductionDao {
-    @Insert
-    fun insert(traduction: Traduction)
+    @Insert(entity = Traduction::class, onConflict = OnConflictStrategy.ABORT)
+    fun insert(traduction: TraductionItem)
 
     @Update
     fun update(traduction: Traduction)

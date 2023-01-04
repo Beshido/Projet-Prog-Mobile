@@ -5,7 +5,20 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Traduction::class, Dict::class], version = 1)
+class TraductionItem(
+    val word: String,
+    val base_language: String,
+    val target_language: String,
+    val dict: String
+)
+
+class DictItem(
+    val url: String,
+    val language_source: String,
+    val language_dest: String
+)
+
+@Database(entities = [Traduction::class, Dict::class], version = 17)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun traductionDao(): TraductionDao
     abstract fun dictDao(): DictDao
@@ -24,8 +37,8 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "app_database"
-                ).build()
+                    "DictTable"
+                ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 return instance
             }
