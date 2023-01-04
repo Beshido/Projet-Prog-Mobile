@@ -44,6 +44,13 @@
             android:layout_weight="1"
             android:gravity="right" />
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/dict_spinner"
+            android:layout_width="22dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="right" />
+
     </LinearLayout>
 
 

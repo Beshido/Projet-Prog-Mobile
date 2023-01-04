@@ -19,15 +19,14 @@ import androidx.room.Insert
 import androidx.room.Room
 import fr.lejeune.banane.projettraduction.databinding.ActivityMainBinding
 
-private lateinit var dao: Dao
-
 class MainActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityMainBinding // view binding object
-    val CHANNEL_ID = "message urgent"
     val notificationManager by lazy { getSystemService(NOTIFICATION_SERVICE) as NotificationManager }
-    val pendingFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
 
     val model by lazy { ViewModelProvider(this).get(AppDatabaseViewModel::class.java) }
+
+    private lateinit var adapter: MyRecycleAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,52 +34,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         createNotificationChannel()
 
-        val database = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java,
-            "app_database"
+        model.getAllDicts()
 
+        adapter = MyRecycleAdapter(emptyList<Dict>().toMutableList())
+        binding.dictSpinner.adapter = adapter
 
-        ).build()
-        val userDao = database.traductionDao()
         val languageOptions = arrayOf("Français", "Anglais", "Espagnol", "Allemand")
-        val adapter = ArrayAdapter(this, R.layout.simple_spinner_item, languageOptions)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerLanguages1.adapter = adapter
-        binding.spinnerLanguages2.adapter = adapter
+        val adapterLangues = ArrayAdapter(this, R.layout.simple_spinner_item, languageOptions)
+        adapterLangues.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerLanguages1.adapter = adapterLangues
+        binding.spinnerLanguages2.adapter = adapterLangues
 
-        binding.spinnerLanguages1.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    // do something when an item is selected
-                }
-
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {
-                    // do something when nothing is selected
-                }
-            }
-        binding.spinnerLanguages2.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    // do something when an item is selected
-                }
-
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {
-                    // do something when nothing is selected
-                }
-            }
         binding.boutonTraduire.setOnClickListener {
             val word = binding.motAtraduireEditText.toString()
             val language = binding.spinnerLanguages2.onItemSelectedListener.toString()
@@ -102,7 +66,7 @@ class MainActivity : AppCompatActivity() {
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                CHANNEL_ID,
+                "CHANNEL_ID",
                 "private channel",
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply { description = "private channel" }
@@ -110,8 +74,6 @@ class MainActivity : AppCompatActivity() {
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
             notificationManager.createNotificationChannel(channel)
-
-
         }
     }
 }

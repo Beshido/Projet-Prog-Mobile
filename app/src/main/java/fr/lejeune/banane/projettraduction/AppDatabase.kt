@@ -5,9 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Traduction::class], version = 1)
+@Database(entities = [Traduction::class, Dict::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun traductionDao(): TraductionDao
+    abstract fun dictDao(): DictDao
 
     //create function getDatabase
     companion object {
