@@ -6,6 +6,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 
 class AppDatabaseViewModel(application: Application): AndroidViewModel(application) {
+    var l1: Int = 0
+    var l2: Int = 0
+    val languageOptions = arrayOf("francais", "anglais", "espagnol", "allemand")
+    var url: String? = null
+
+
     val traductionDao = AppDatabase.getDatabase(application).traductionDao()
     val dictDao =  AppDatabase.getDatabase(application).dictDao()
 

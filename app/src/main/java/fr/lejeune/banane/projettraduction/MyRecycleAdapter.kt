@@ -29,11 +29,8 @@ class MyRecycleAdapter(val liste: MutableList<Dict>) : RecyclerView.Adapter<MyRe
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        println("HEELL")
         holder.dict = liste[position]
         holder.binding.nomDict.text = holder.dict.url
-        println(holder.dict.language_source)
-        println(holder.dict.language_dest)
 
     }
 

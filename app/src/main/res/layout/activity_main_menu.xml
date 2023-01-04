@@ -44,7 +44,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:backgroundTint="#FFAEC9"
-        android:text="@string/game" />
+        android:text="@string/game"/>
 
     <Button
         android:id="@+id/button_translation"

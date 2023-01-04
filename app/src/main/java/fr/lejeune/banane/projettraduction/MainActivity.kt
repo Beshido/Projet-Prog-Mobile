@@ -29,37 +29,35 @@ class MainActivity : AppCompatActivity() {
 
     val model by lazy { ViewModelProvider(this).get(AppDatabaseViewModel::class.java) }
 
-    var l1: Int = 0
-    var l2: Int = 0
-    val languageOptions = arrayOf("francais", "anglais", "espagnol", "allemand")
-    var url: String? = null
-
     private lateinit var adapter: MyRecycleAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        createNotificationChannel()
+        // createNotificationChannel()
 
         if (savedInstanceState == null)
-            model.getSpecificDicts(languageOptions[0], languageOptions[1])
+            model.getSpecificDicts(model.languageOptions[0], model.languageOptions[1])
 
+
+        adapter = MyRecycleAdapter(emptyList<Dict>().toMutableList())
+        binding.dictSpinner.layoutManager = LinearLayoutManager(this)
+        binding.dictSpinner.adapter = adapter
         model.resultatSelect?.observe(this) {
-            adapter = MyRecycleAdapter(it as MutableList<Dict>)
-            binding.dictSpinner.layoutManager = LinearLayoutManager(this)
-            binding.dictSpinner.adapter = adapter
+            adapter.setListContent(it)
+            adapter.notifyDataSetChanged()
         }
 
-        val adapterLangues = ArrayAdapter(this, R.layout.simple_spinner_item, languageOptions)
+        val adapterLangues = ArrayAdapter(this, R.layout.simple_spinner_item, model.languageOptions)
         adapterLangues.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerLanguages1.adapter = adapterLangues
         binding.spinnerLanguages2.adapter = adapterLangues
         binding.spinnerLanguages1.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                l1 = position
+                model.l1 = position
                 model.resultatSelect?.removeObservers( this@MainActivity )
-                model.getSpecificDicts(languageOptions[l1], languageOptions[l2])
+                model.getSpecificDicts(model.languageOptions[model.l1], model.languageOptions[model.l2])
                 model.resultatSelect?.observe( this@MainActivity ) {
                     adapter.setListContent(it)
                     adapter.notifyDataSetChanged()
@@ -69,9 +67,10 @@ class MainActivity : AppCompatActivity() {
         }
         binding.spinnerLanguages2.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                l2 = position
+                model.l2 = position
+
                 model.resultatSelect?.removeObservers( this@MainActivity )
-                model.getSpecificDicts(languageOptions[l1], languageOptions[l2])
+                model.getSpecificDicts(model.languageOptions[model.l1], model.languageOptions[model.l2])
                 model.resultatSelect?.observe( this@MainActivity ) {
                     adapter.setListContent(it)
                     adapter.notifyDataSetChanged()
@@ -82,7 +81,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.boutonTraduire.setOnClickListener {
             val word = binding.motAtraduireEditText.text.toString()
-            val language = languageOptions.get(l2)
+            val language = model.languageOptions.get(model.l2)
             val dict = if (!adapter.getSelected()?.url.isNullOrEmpty()) adapter.getSelected()?.url else "https://www.google.fr/search?q=traduction+$language+"
 
             val url = dict + word
@@ -98,14 +97,15 @@ class MainActivity : AppCompatActivity() {
 
         binding.boutonAjoutBDD.setOnClickListener {
             val word = binding.motAtraduireEditText.text.toString()
-            val language_source = languageOptions.get(l1)
-            val language_dest = languageOptions.get(l2)
-            val dict = url
+            val language_source = model.languageOptions.get(model.l1)
+            val language_dest = model.languageOptions.get(model.l2)
+            val dict = model.url
 
-            if (word.isNullOrEmpty() || l1 == l2 || url.isNullOrEmpty()) {
+            if (word.isNullOrEmpty() || model.l1 == model.l2 || model.url.isNullOrEmpty()) {
                 Toast.makeText(this, "Erreur...", Toast.LENGTH_SHORT).show()
             }
             else {
+                Toast.makeText(this, "Ajout du mot $word à la base de donnée...", Toast.LENGTH_SHORT).show()
                 Thread {
                     model.addTraduction(TraductionItem(word, language_source, language_dest, dict!!))
                     model.addDict(DictItem(dict, language_source, language_dest))
@@ -120,11 +120,21 @@ class MainActivity : AppCompatActivity() {
                 println(it)
                 if (it != null) {
                     val lastSlashIndex = it.lastIndexOf("/")
-                    url = it.substring(0, lastSlashIndex + 1)
-                    val word = it.substring(lastSlashIndex + 1, it.length)
+
+                    // valeurs de départ
+                    var indexBegin = lastSlashIndex + 1
+                    var indexEnd = it.length
+                    if (it.contains("larousse")) {
+                        indexBegin = 55
+                        indexEnd = lastSlashIndex
+                    }
+
+                    model.url = it.substring(0, indexBegin)
+                    val word = it.substring(indexBegin, indexEnd)
+
                     binding.motAtraduireEditText.setText(word)
 
-                    println(url)
+                    println(model.url)
                     println(word)
                 }
             }
